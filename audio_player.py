@@ -11,6 +11,7 @@ import urllib.request
 import threading
 from PyQt6.QtCore import QUrl, QObject, pyqtSignal
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+from commentary_engine import load_dotenv
 
 class AudioPlayer(QObject):
     speech_started = pyqtSignal()
@@ -18,6 +19,7 @@ class AudioPlayer(QObject):
 
     def __init__(self):
         super().__init__()
+        load_dotenv()
         self.player = QMediaPlayer()
         self.audio_output = QAudioOutput()
         self.player.setAudioOutput(self.audio_output)

@@ -127,47 +127,75 @@ class EventServerHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
+    def handle(self):
+        try:
+            super().handle()
+        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError, OSError):
+            pass
+
+    def finish(self):
+        try:
+            super().finish()
+        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError, OSError):
+            pass
+
     def do_GET(self):
-        if self.path == "/health":
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(b'{"status":"ok","mode":"native-desktop"}')
-        else:
-            self.send_response(404)
-            self.end_headers()
+        try:
+            if self.path == "/health":
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok","mode":"native-desktop"}')
+            else:
+                self.send_response(404)
+                self.end_headers()
+        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError, OSError):
+            pass
 
     def do_POST(self):
         if self.path == "/api/event":
-            content_length = int(self.headers.get("Content-Length", 0))
-            body_bytes = self.rfile.read(content_length)
-            
-            # Respond immediately to unblock Claude Code
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(b'{"status":"received"}')
-
+            body_bytes = b"{}"
             try:
-                body = json.loads(body_bytes.decode("utf-8")) if body_bytes else {}
-                norm = normalize_event(body)
-
-                # Generate commentary for all major tool actions
-                if norm.get("is_major_action"):
-                    commentary = body.get("commentary") or generate_commentary(
-                        norm["type"], norm["context"], norm["title"], body
-                    )
-                    norm["commentary"] = commentary
-                else:
-                    norm["commentary"] = ""
-
-                if EventServerHandler.dispatcher_callback:
-                    EventServerHandler.dispatcher_callback(norm)
-            except Exception as e:
+                content_length = int(self.headers.get("Content-Length", 0))
+                if content_length > 0:
+                    body_bytes = self.rfile.read(content_length)
+                
+                # Immediate HTTP 200 response to unblock Claude Code
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                self.wfile.write(b'{"status":"received"}')
+            except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError, OSError):
                 pass
+
+            # Asynchronous background AI commentary generation (never stalls HTTP)
+            def process_event_async(data_bytes):
+                try:
+                    body = json.loads(data_bytes.decode("utf-8")) if data_bytes else {}
+                    norm = normalize_event(body)
+
+                    if norm.get("is_major_action"):
+                        commentary = body.get("commentary") or generate_commentary(
+                            norm["type"], norm["context"], norm["title"], body
+                        )
+                        norm["commentary"] = commentary
+                    else:
+                        norm["commentary"] = ""
+
+                    if EventServerHandler.dispatcher_callback:
+                        EventServerHandler.dispatcher_callback(norm)
+                except Exception:
+                    pass
+
+            threading.Thread(target=process_event_async, args=(body_bytes,), daemon=True).start()
         else:
-            self.send_response(404)
-            self.end_headers()
+            try:
+                self.send_response(404)
+                self.end_headers()
+            except Exception:
+                pass
 
 def start_event_server(callback, port=3001):
     EventServerHandler.dispatcher_callback = callback

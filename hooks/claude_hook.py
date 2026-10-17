@@ -100,7 +100,7 @@ def main():
             data=data_bytes,
             headers={"Content-Type": "application/json"}
         )
-        with urllib.request.urlopen(req, timeout=0.35) as resp:
+        with urllib.request.urlopen(req, timeout=1.5) as resp:
             log(f"Dispatched -> Status: {resp.status}")
     except Exception as e:
         log(f"Dispatch failed, attempting to auto-start main.py: {e}")
@@ -110,7 +110,7 @@ def main():
             main_py = os.path.join(base_dir, "main.py")
             subprocess.Popen(["C:\\Python314\\pythonw.exe", main_py], cwd=base_dir)
             time.sleep(0.4)
-            with urllib.request.urlopen(req, timeout=0.35) as resp:
+            with urllib.request.urlopen(req, timeout=1.5) as resp:
                 log(f"Dispatched after auto-start -> Status: {resp.status}")
         except Exception:
             pass

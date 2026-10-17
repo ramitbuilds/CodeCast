@@ -333,12 +333,13 @@ class FloatingDynamicNotch(QWidget):
         p.drawText(r, Qt.AlignmentFlag.AlignCenter, "Claude Code")
 
     def draw_alert(self, p, r):
-        # ONLY display the clean, witty cricket commentary line in crisp white
+        # ONLY display the clean taunt without double quotes
         if self.commentary:
             p.setPen(QColor(255, 255, 255))
             p.setFont(QFont("Segoe UI", 10, QFont.Weight.DemiBold))
             text_rect = r.adjusted(24, 0, -24, 0)
-            p.drawText(text_rect, Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, f'"{self.commentary}"')
+            clean_text = self.commentary.replace('"', '').replace('“', '').replace('”', '').strip()
+            p.drawText(text_rect, Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, clean_text)
 
 def main():
     app = QApplication(sys.argv)
