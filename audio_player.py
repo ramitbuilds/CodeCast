@@ -87,7 +87,7 @@ class AudioPlayer(QObject):
         try:
             self.speech_started.emit()
             clean_text = text.replace('"', '').replace("'", "")
-            cmd = f'powershell -WindowStyle Hidden -NoProfile -Command "(New-Object -ComObject SAPI.SpVoice).Speak(\'{clean_text}\')"'
+            cmd = f'powershell -WindowStyle Hidden -NoProfile -Command "(New-Object -ComObject SAPI.SpVoice).Speak(\'{clean_text}\', 3)"'
             os.system(cmd)
         finally:
             self.speech_finished.emit()

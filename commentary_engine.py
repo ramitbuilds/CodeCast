@@ -61,10 +61,7 @@ FALLBACK_COMMENTARY = {
 
 def get_random_commentary(event_type, context=""):
     lines = FALLBACK_COMMENTARY.get(event_type, FALLBACK_COMMENTARY["DEFAULT"])
-    picked = random.choice(lines)
-    if context and event_type == "FILE_EDITED" and context not in picked:
-        return f"{picked} ({context})"
-    return picked
+    return random.choice(lines)
 
 def generate_commentary(event_type, context="", title="", raw_data=None):
     """Generates commentary using Gemini/OpenAI if API keys exist, else fallback"""

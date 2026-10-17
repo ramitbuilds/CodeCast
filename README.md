@@ -93,16 +93,17 @@ python simulate.py
 
 ---
 
-## 🔌 Connecting with Claude Code
+## 🔌 Connected with Claude Code (Already Configured!)
 
-Add this to your Claude Code hook configuration (`~/.claude/settings.json`):
-```json
-{
-  "hooks": {
-    "post_tool_execution": "python hooks/claude_hook.py"
-  }
-}
-```
+CodeCast is now **fully wired up** into both your global `~/.claude/settings.json` and local `.claude/settings.json`! Every tool call streams directly from Claude Code into the Notch via stdin.
+
+### Configured Lifecycle Hooks:
+* **`UserPromptSubmit`** → Fires when you enter a prompt. Notch announces match beginning / new batsman.
+* **`PostToolUse`** → Automatically streams every tool execution (`Edit`, `Write`, `Bash`, `Glob`, `Grep`) with live parameters and file paths.
+* **`Notification`** → Triggers a **3rd Umpire Review** when Claude requests permission or attention.
+* **`Stop`** → Celebrates **Historic Finish / Century** when Claude completes the task.
+
+Whenever you run `claude` in any terminal, every tool execution will automatically broadcast to your desktop Dynamic Island with humorous live cricket commentary and speech!
 
 Or send manual events from any script:
 ```bash
