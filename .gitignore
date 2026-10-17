@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.local
+server/public/audio/comm_*
+*.log
+__pycache__/
+*.pyc
